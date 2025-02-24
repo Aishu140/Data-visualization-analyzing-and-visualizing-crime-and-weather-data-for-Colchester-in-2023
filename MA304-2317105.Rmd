@@ -1,0 +1,382 @@
+---
+title: "MA304-FINAL PROJECT"
+name: "AISHWARYA SELVARAJ"
+output: html_document
+date: "2024-04-25"
+---
+
+
+INTRODUCTION
+
+The complex interplay between environmental conditions and crime rates has attracted a lot of interest from the legal enforcement and academic sectors. Out of all the environmental factors, one that has been found to have a considerable impact on the dynamics of criminal activity is temperature. Higher temperatures have been linked to an increase in violent behaviour and, consequently, a rise in crimes like assaults, vandalism, and disturbances in public places, according to earlier research. In contrast, colder weather may discourage people from going outside, which could lessen the number of crimes that occur in public spaces while also increasing the risk of crimes like theft and burglary.
+
+Colchester offers a distinctive setting for investigating these phenomena because of its varied urban surroundings. This study examines and visualises the relationship between temperature variations and crime incidences in Colchester by utilising a large dataset that includes street-level crime statistics from 2023 together with daily temperature readings. In addition to spotting trends and patterns, this study tries to improve the crime prevention techniques' prediction power, which could have an impact on law enforcement and policy.
+
+OBJECTIVES:
+
+The following are the main goals of this study:
+1. Explore Temporal Trends: Examine the relationship between variations in temperature and crime rates over time. This entails looking at seasonal fluctuations and certain time periods where strong correlations are visible.
+
+2. Classify Crime Sensitivity: Find out which types of crimes are most susceptible to temperature variations. Knowing which types of crimes are likely to rise during warm or cold periods will be made easier with the aid of this analysis.
+
+3. Geospatial association: Make use of mapping tools to identify regional trends and hotspots where there is a substantial association between temperature and crime rates. This will make it easier to see how crime is distributed spatially in relation to temperature differences in various Colchester neighbourhoods.
+
+4. Statistical Analysis: To measure the association between temperature and crime rates, use statistical techniques including regression analysis and correlation coefficients. This will give us a clearer picture of how closely these elements are related.
+
+5. Create Predictive Insights: Provide proactive crime prevention strategies that take temperature projections into account based on the findings. This could help police and community leaders plan more efficiently.
+
+
+Approach
+
+The methodology section describes the strategy used to examine the connection between temperature and crime rates:
+ 1.Data Collection: Provides an overview of the sources, data integrity, and preprocessing procedures for the temperature and crime datasets.
+ 
+ 2.Data Visualisation: To effectively depict the data, use a variety of visualisation techniques, including time series graphs, heatmaps, scatter plots, and interactive maps.
+ 
+ 3.Statistical Techniques: To statistically validate findings and theories from the visual data analysis, regression models and correlation analysis are employed.
+ 
+ 4.Interactive Visualisations: To provide deeper knowledge and engagement, interactive plots for advanced insights will be made available to stakeholders.
+ 
+
+ Significance
+
+By helping law enforcement agencies with their strategic planning and resource allocation, this analysis has a great deal of potential to improve public safety in Colchester. Policymakers can create timely, contextually-relevant solutions by knowing how environmental elements, like temperature, affect crime rates. To further increase the research's impact, the results might also be used as a template by other comparable cities looking to incorporate environmental data into public safety plans.
+
+In order to promote more informed decision-making and add to the growing body of knowledge on environmental criminology, this paper attempts to provide thorough insights into the climatic influences on crime through meticulous visualisations and rigorous statistical analysis.
+
+
+
+
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+#loading necessary libraries
+library(ggplot2)
+library(dplyr)
+library(tidyr)
+library(lubridate)
+library(leaflet)
+library(plotly)
+
+```
+
+
+```{r}
+#reading the data
+crime_data <- read.csv("C:/Users/aishu/Downloads/crime23 (2).csv")
+weather_data <- read.csv("C:/Users/aishu/Downloads/temp2023 (2).csv")
+
+# Preview the data
+head(crime_data)
+head(weather_data)
+
+```
+
+
+
+
+```{r}
+library(dplyr)
+library(lubridate)
+
+#  crime_data$date is a character in "YYYY-MM" format
+crime_data$month <- as.Date(paste0(crime_data$date, "-01"), "%Y-%m-%d")
+
+#  weather_data$Date is in "YYYY-MM-DD" format and TemperatureCAvg is the column with temperature values
+weather_data$month <- as.Date(format(as.Date(weather_data$Date), "%Y-%m-01"))
+weather_data_avg <- weather_data %>%
+  group_by(month) %>%
+  summarise(AvgTemp = mean(TemperatureCAvg, na.rm = TRUE), .groups = 'drop')
+
+# Merge the data frames on the 'month' column
+combined_data <- merge(crime_data, weather_data_avg, by.x = "month", by.y = "month")
+
+
+
+```
+
+
+Frequency of Crime Categories in Colchester, 2023.
+
+
+The data presented in the table offers a revealing snapshot of crime in Colchester for the year 2023. The most striking detail is the high incidence of violent crime, which, at 2,633 reported incidents, stands out as the most prevalent crime category, perhaps indicating an urgent area for intervention and prevention strategies. On the other end of the spectrum, offenses such as possession of weapons and theft from the person are among the least reported, with 74 and 76 incidents, respectively, which may reflect effective deterrence measures or reporting behaviors.
+
+Anti-social behavior, with 677 incidents, also constitutes a significant portion of the crime report, suggesting a pervasive issue that could be impacting the quality of life within the community. Notably, property-related crimes such as burglary, vehicle crime, and other thefts feature prominently, collectively accounting for over a thousand incidents and hinting at potential targets for enhanced security measures.
+
+Categories like public order and criminal damage or arson have middling frequencies, underscoring a variety of disruptive activities that challenge public safety. Meanwhile, shoplifting (554 incidents) indicates a considerable impact on local businesses, while drug-related crimes (208 incidents) point to ongoing substance abuse issues that might require focused health and social services interventions.
+
+```{r}
+# Display a table of crime counts by category
+table_category <- table(combined_data$category)
+knitr::kable(table_category, caption = "Crime Counts by Category")
+```
+
+
+
+Outcomes of Crime Incidents in Colchester, 2023
+
+
+The table below represents a comprehensive breakdown of crime outcomes, revealing how each case was resolved or progressed through the justice system. The crime categories listed include offenses such as burglary, drugs, vehicle crime, and violent crime, among others.
+
+High Volume of Violent Crimes:
+
+A significant number of violent crime cases were reported, with many either awaiting court outcome or resulting in action by another organization. Notably, there's a large number under investigation, indicating ongoing efforts to address these offenses.
+
+Shoplifting and Public Order:
+Shoplifting and public order offenses also show a considerable count, with a substantial portion resulting in local resolution or no further action due to the absence of suspects.
+
+Resolution and Charges: 
+For some categories like drugs and possession of weapons, there is a noteworthy proportion of cases where offenders were given a caution or suspects were charged, highlighting effective resolution of incidents.
+
+Unresolved Cases: 
+The table also highlights instances where further action was deemed not in the public interest or where cases are still under investigation, suggesting complexities in crime resolution.
+
+The varying outcomes depicted in this table shed light on the efficacy and challenges of crime resolution within Colchester. Violent crimes appear to be of particular concern, given their high numbers and the considerable proportion of cases still under active investigation or awaiting trial. While some crimes like shoplifting often conclude with local resolutions, the considerable number of unresolved cases or those dropped due to a lack of public interest could point to potential areas for improvement in crime prevention and law enforcement.
+```{r}
+# Two-way table of crime by outcome status
+table_outcome <- xtabs(~ category + outcome_status, data = combined_data)
+knitr::kable(table_outcome, caption = "Crime Counts by Category and Outcome")
+
+```
+
+
+
+ Crime Category Distribution in Colchester for 2023
+ 
+ 
+The pie chart below represents the distribution of different crime categories within the dataset. The chart uses varying colors to differentiate between categories and to visually convey their proportional contribution to the total crime count.
+
+Each 'slice' of the pie represents a category of crime. The size of the slice is proportional to the frequency (Freq) of crimes in that category—the larger the slice, the more frequently that type of crime occurred.
+
+From the chart, we can infer several points:
+
+The category "anti-social-behaviour" seems to dominate, indicating it is the most frequent crime reported within this dataset.
+Categories such as "vehicle-crime" and "violent-crime" also have considerable slices, suggesting they are common as well.
+On the other hand, "bicycle-theft", "robbery", and "theft-from-the-person" make up smaller portions, which could imply these types of crimes are less frequent in comparison.
+Other categories like "drugs", "possession-of-weapons", and "public-order" are represented with different colors, indicating they are distinct crime types but are not among the most frequent ones.
+Pie charts are useful for showing the composition of a whole where each slice represents a part of the total. In this context, the chart effectively illustrates the breakdown of crime types, enabling viewers to quickly grasp which types of crimes are most and least common within the dataset.
+
+
+```{r}
+library(ggplot2)
+
+# Pie chart
+df <- as.data.frame(table(combined_data$category))
+colnames(df) <- c("Category", "Freq")
+ggplot(df, aes(x = "", y = Freq, fill = Category)) +
+  geom_bar(width = 1, stat = "identity") +
+  coord_polar(theta = "y") +
+  labs(title = "Crime Distribution")
+
+```
+
+Histogram of average daily temperatures:
+
+
+The provided histogram visualizes the frequency distribution of average daily temperatures recorded over a specified period. From the graph, we observe a bell-shaped distribution, suggesting a normal-like pattern of temperature variations. Most days cluster around the middle temperature range, indicating moderate climate conditions are the most common.
+
+Key Observations:
+
+
+- The temperature range with the highest frequency falls between approximately 5°C to 15°C, suggesting these are the most commonly experienced temperatures.
+- There are fewer instances of extreme temperatures, with both the higher (>20°C) and lower (<0°C) ranges being less frequent.
+- The data implies a temperate climate with a concentration of days in the comfortable range, with fewer occurrences of days with temperatures that might be considered unusually warm or cold.
+
+The histogram is a starting point for assessing the impact of temperature on various phenomena, such as crime rates, in Colchester. By understanding temperature trends, one might explore correlations with crime data to determine if weather plays a role in the frequency or type of crimes committed. Such insights could be valuable for planning public services and law enforcement activities.
+
+```{r}
+# Histogram of daily temperatures
+ggplot(weather_data, aes(x = TemperatureCAvg)) +
+  geom_histogram(binwidth = 1, fill = "skyblue") +
+  labs(title = "Histogram of Average Daily Temperatures", x = "Temperature (°C)", y = "Frequency")
+
+```
+
+```{r}
+# Density plot of daily temperatures
+ggplot(weather_data, aes(x = TemperatureCAvg)) +
+  geom_density(fill = "blue", alpha = 0.5) +
+  labs(title = "Density Plot of Average Daily Temperatures", x = "Temperature (°C)", y = "Density")
+
+```
+
+SINA PLOT FOR CRIME AND OUTCOME STATUS
+
+
+The Sina plot visualizes the various outcomes of crime reports across multiple categories, displaying a dense clustering of data points that reflects the prevalence of certain outcomes within each crime type. This plot is especially useful for observing the distribution and density of outcomes across categories, as the individual data points are spread out to minimize overlap and enhance visibility.
+
+In the visualization, crime categories such as anti-social behavior, public-order offenses, and violent crime exhibit a significant number of cases, which are indicated by the tight clustering of points. This suggests a pattern in how these crimes are resolved or processed by the justice system. The variability seen in categories like criminal-damage-arson and shoplifting, where points are more widely dispersed, implies a broader spectrum of outcomes for these types of crimes.
+
+The Sina plot provides insights into the crime resolution process, allowing for the identification of common outcomes across different crime types. Categories with a high concentration of points near certain outcome statuses may point to consistent handling of these crimes by law enforcement and the judicial system. In contrast, categories with points spread across a range of outcome statuses may indicate a less uniform approach to resolving these crimes, potentially due to the complexity or nature of the crimes themselves.
+
+By offering a clear depiction of how different crimes are concluded, the plot underscores areas where crime resolution is notably effective, as well as areas where there may be room for improvement. For policymakers and law enforcement agencies, such a visual representation is invaluable for evaluating the efficiency of current practices and for planning targeted interventions to improve crime handling and public safety measures.
+```{r}
+# Box plot of temperatures
+ggplot(weather_data, aes(y = TemperatureCAvg)) +
+  geom_boxplot(fill = "lightblue") +
+  labs(title = "Box Plot of Average Daily Temperatures", y = "Temperature (°C)")
+
+# Violin plot of temperatures
+ggplot(weather_data, aes(x = factor(1), y = TemperatureCAvg)) +
+  geom_violin(fill = "pink") +
+  labs(title = "Violin Plot of Average Daily Temperatures", y = "Temperature (°C)") +
+  theme(axis.title.x=element_blank(),
+        axis.text.x=element_blank(),
+        axis.ticks.x=element_blank())
+
+
+# Assuming outcome_status can be ordered, convert it to an ordered factor
+crime_data$outcome_status <- factor(crime_data$outcome_status, ordered = TRUE)
+
+# Sina plot of crime types and outcome status
+library(ggforce)
+ggplot(crime_data, aes(x = category, y = as.numeric(outcome_status))) +
+  geom_sina() +
+  theme_minimal() +
+  labs(title = "Sina Plot of Crime Types by Outcome Status", x = "Crime Category", y = "Outcome Status")
+
+```
+
+Scatter plot of daily temperature max vs min
+
+
+scatter plot that compares the minimum and maximum daily temperatures. In this plot, each point represents a single day's temperature readings, with the minimum temperature on the x-axis and the maximum temperature on the y-axis.
+
+The distribution of points suggests a positive correlation between the day's minimum and maximum temperatures – as the minimum temperature increases, so does the maximum. This pattern is typical since days that start off warmer tend not to cool down significantly, leading to higher overall temperatures.
+
+We can observe a wide spread in the maximum temperatures, especially for days with moderate minimum temperatures, which indicates variability in how much the temperature rises during the day. Days with very low minimum temperatures show less variance in the maximum, which could suggest a more consistent warming pattern on colder days.
+
+This type of visualization is useful for understanding temperature fluctuations and can be particularly relevant for studying weather-related impacts on human behavior or natural phenomena, including crime rates, which might be influenced by extreme temperatures or significant swings between daily lows and highs
+```{r}
+# Scatter plot of daily temperature max vs min
+ggplot(weather_data, aes(x = TemperatureCMin, y = TemperatureCMax)) +
+  geom_point(alpha = 0.6) +
+  labs(title = "Scatter Plot of Daily Min vs Max Temperatures", x = "Min Temperature (°C)", y = "Max Temperature (°C)")
+
+# Pair plot of temperature data
+library(GGally)
+ggpairs(weather_data[, c("TemperatureCAvg", "TemperatureCMax", "TemperatureCMin")])
+
+```
+
+Scatter plot between crime count and average temperature
+
+The plot below shows the correlation between total crime count and average temperature. The x-axis represents average temperature in degrees Celsius, and the y-axis represents the total number of crimes. Each dot on the plot represents the aggregated data for a specific period, such as a month.
+
+The blue line across the plot represents the line of best fit from a linear regression analysis, indicating the general trend in the relationship between the two variables. The shaded area around the line suggests the confidence interval, providing a visual range where the true line of best fit is expected to lie with a certain level of confidence.
+
+It seems there is a positive relationship between temperature and the number of crimes: as the temperature increases, the number of crimes also tends to increase. However, it’s important to note that correlation does not imply causation. While the trend line suggests that warmer temperatures are associated with higher crime counts, this does not necessarily mean that higher temperatures cause more crimes. Other factors could be influencing this relationship, and further analysis would be needed to draw any causal conclusions.
+```{r}
+crime_data_monthly <- crime_data %>%
+  group_by(month) %>%
+  summarise(TotalCrimes = n(), .groups = 'drop')
+combined_data <- merge(crime_data_monthly, weather_data_avg, by = "month")
+correlation <- cor(combined_data$TotalCrimes, combined_data$AvgTemp, use = "complete.obs")
+print(correlation)
+library(ggplot2)
+
+# Assuming combined_data is your merged dataset containing the TotalCrimes and AvgTemp for each month
+ggplot(combined_data, aes(x = AvgTemp, y = TotalCrimes)) +
+  geom_point() +  # This adds the scatter plot points
+  geom_smooth(method = "lm", color = "blue") +  # This adds a regression line
+  labs(
+    title = "Correlation between Crime Count and Average Temperature",
+    x = "Average Temperature (°C)",
+    y = "Total Crime Count"
+  ) +
+  theme_minimal()
+
+```
+Time series plot for crime over time
+
+
+The time series plot below shows the trend of crime incidents over the course of the year 2023. The x-axis represents the time, divided into months from January to October. The y-axis quantifies the number of crimes, allowing viewers to observe how crime rates have changed over time.
+
+In the plot, multiple lines are visible, each representing a different crime category or precinct. The bold line, likely the top one, seems to show the aggregate number of crimes for all categories or a total for a significant category or the entire region. The pattern of this line reveals the fluctuations in crime over the months, with peaks indicating a higher number of reported crimes and troughs indicating fewer reports.
+
+The other lines, which are lighter and more numerous, might represent individual crime categories or data from different precincts. These lines exhibit various trends; some remain relatively flat, suggesting consistency in crime numbers, while others have more variability.
+
+One key observation is that while the overall trend shows variation, there is a noticeable peak around the middle of the year. This could be due to a variety of factors such as weather changes, holiday periods, or other seasonal factors that typically influence crime rates.
+
+The chart serves as a crucial analytical tool in understanding the temporal dynamics of crime within the region, helping to pinpoint times of increased or decreased criminal activity. Such insights are invaluable for law enforcement and public safety officials, as they can adjust their strategies and resource allocations to better prevent and respond to crime based on these patterns.
+```{r}
+# Time series plot of crimes over time
+ggplot(crime_data, aes(x = date, group = category)) +
+  geom_line(aes(y = ..count..), stat = "count") +
+  labs(title = "Time Series of Crimes Over Time", x = "Date", y = "Number of Crimes")
+```
+
+Smoothed time series plot
+
+
+The smoothed time series plot below showing the trend of crime incidents over several months in 2023. The time, represented on the x-axis, progresses from January to October, while the y-axis quantifies the number of crimes reported.
+
+This plot features two key elements:
+
+Individual Crime Trend Lines: Each thinner line in blue likely represents the trend of a specific crime category or precinct over time. The smoothing of these lines helps in identifying the overarching trend without getting lost in the day-to-day fluctuations that raw data might present.
+Aggregate Crime Trend Line: The thicker line in blue that stands out among the others is probably the overall trend line that aggregates the trends from all the individual categories or precincts. It provides a clear visualization of the general movement in crime rates throughout the year.
+The trend lines show that while there are variations in crime rates with peaks and troughs indicating fluctuations in criminal activity, there's a discernible pattern or seasonality to these crimes. For example, there may be a peak in the middle of the year, which could coincide with summer months where crime rates typically increase due to various factors such as more people being outdoors and increased social activity.
+```{r}
+# Use smoothing to illustrate trends
+ggplot(crime_data, aes(x = date, group = category)) +
+  geom_smooth(aes(y = ..count..), stat = "count") +
+  labs(title = "Smoothed Time Series of Crimes Over Time", x = "Date", y = "Number of Crimes")
+
+```
+
+An Interactive Map of 2023 Crime Data
+.
+
+The map has below will provide residents and stakeholders with a visual representation of the crime landscape across the city. Navigate through the map to understand where and how different types of crimes have taken place over the year.
+Each marker on the map represents a crime reported to local authorities. By clicking on these markers, you can access specific details about each incident, such as the type of crime, the date it occurred, and the current status of the investigation. The distribution of crimes on the map might reveal clusters or hotspots, indicating areas where crime rates are particularly high. By understanding these patterns, community members can be more informed and vigilant, while local law enforcement can tailor their prevention and response strategies more effectively.
+```{r}
+library(leaflet)
+
+# Create a map with crime locations
+leaflet(crime_data) %>%
+  addTiles() %>%
+  addCircleMarkers(lng = ~long, lat = ~lat, popup = ~category)
+
+```
+
+
+
+
+Discussion
+
+Our analysis has delved into the intricate relationship between crime occurrences and average temperature over time in Colchester for the year 2023. The various plots generated through R, including a time series analysis, a Sina plot, and a scatter plot with a regression line, have illuminated several notable trends.
+
+The time series plot of crime over time revealed distinct patterns in crime incidents throughout the year. There were periods where crime rates spiked, and others where they fell. The Sina plot showed the distribution of outcomes for different crime types, suggesting variability in the resolution of crimes across categories. Meanwhile, the scatter plot emphasized a potential correlation between average temperature and the total number of crimes, with the trend suggesting that higher temperatures may be associated with an increase in crime rates.
+
+Notably, the smoothed time series plot indicated that while individual crime categories fluctuated, the overall trend was reasonably consistent, with some exceptions during certain months. This consistency points towards underlying factors that may influence crime rates in a systematic manner.
+
+The correlation graph reinforced this observation, presenting a positive relationship between temperature and crime rates. However, the correlation coefficient alone does not imply causality, and it is crucial to consider external factors that might contribute to this observed relationship. For instance, warmer months might coincide with increased social activities and greater public presence, potentially leading to higher crime rates.
+
+Conclusion
+
+Our exploration into Colchester's 2023 crime data suggests a notable association between average temperatures and crime rates. While the data points to a potential rise in crime with increasing temperatures, caution must be exercised before drawing direct causal inferences. The observed patterns underscore the importance of considering seasonal and environmental factors when planning law enforcement strategies and community safety initiatives.
+
+The utilization of interactive and visual analytical tools like Leaflet maps for crime locations also provides valuable insights into spatial trends, offering a practical means for the public and policymakers to engage with the data. As such, these tools can play a significant role in preventative planning and resource allocation.
+
+To move from correlation to causation, further research would be required, potentially incorporating a broader set of variables such as socioeconomic data, demographic shifts, and changes in local law enforcement practices. By deepening the analysis, we can gain a more holistic understanding of the factors driving crime trends and design targeted interventions that address the root causes effectively.
+
+In conclusion, while our findings indicate a correlation between warmer temperatures and increased crime rates, they also open the door to a range of subsequent inquiries. Through collaborative efforts between data analysts, criminologists, and urban planners, we can leverage these insights to foster safer communities that are responsive to the multifaceted nature of crime.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
